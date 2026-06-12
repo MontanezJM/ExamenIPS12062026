@@ -6,7 +6,7 @@ on:
     tags: [ 'v*.*.*' ]
 env:
   # Dynamic construction: username/github-repo-name
-  IMAGE_NAME: mundial2026
+  IMAGE_NAME: jmmontanez/mundial2026josemariamontanezmora
   REGISTRY: docker.io
 
 jobs:
