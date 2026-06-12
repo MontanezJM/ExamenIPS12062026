@@ -25,7 +25,7 @@
   { "nombre": "Borja Iglesias",      "pais": "España",    "posicion": "Delantero",      "dorsal": 26 },
   { "nombre": "Víctor Muñoz",        "pais": "España",    "posicion": "Delantero",      "dorsal": 25 },
   { "nombre": "Lamine Yamal",        "pais": "España",    "posicion": "Delantero",      "dorsal": 19 },
-  { "nombre": "Sergio Ramoss",        "pais": "España",    "posicion": "Defensa",        "dorsal": 97},
+  { "nombre": "Sergio Ramos",        "pais": "España",    "posicion": "Defensa",        "dorsal": 97},
   
   { "nombre": "Emiliano Martínez",   "pais": "Argentina", "posicion": "Portero",        "dorsal": 23 },
   { "nombre": "Gerónimo Rulli",      "pais": "Argentina", "posicion": "Portero",        "dorsal": 12 },
