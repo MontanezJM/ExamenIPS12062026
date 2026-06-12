@@ -34,7 +34,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract Docker metadata
+      - name: 5. Extraer metadatos de la imagen
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -46,14 +46,50 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
 
-      - name: Build and push Docker image
+      - name: 6. Construir y publicar la imagen
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from/cache-to: type=gha
           platforms: linux/amd64
+  
+  deploy:
+    needs: build-and-publish # It will not start until the previous job has successfully completed.
+    runs-on: self-hosted 
+    
+    steps:
+      - name: Code checkout (Manifiesto K8s)
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        run: |
+          # Install kubectl if not already available
+          if ! command -v kubectl &> /dev/null; then
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin/
+          fi
+
+      - name: Update deployment image
+        run: |
+          $sha = $env:GITHUB_SHA.Substring(0, 7) kubectl set image deployment/${{ env.IMAGE_NAME }} ${{env.IMAGE_NAME }}=${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME}}/${{ env.IMAGE_NAME }}:sha-$sha
+
+      - name: Wait for deployment rollout
+        run: |
+          # Wait for the deployment to complete
+          kubectl rollout status deployment/${{ env.IMAGE_NAME }} --timeout=30s
+      
+      - name: Verify deployment
+        run: |
+          # Get deployment status
+          kubectl get deployment ${{ env.IMAGE_NAME }}
+          
+          # Get pod status
+          kubectl get pods -l app=${{ env.IMAGE_NAME }}
+          
+          # Show recent events
+          kubectl get events --sort-by='.lastTimestamp' | Select-Object -Last 10 
